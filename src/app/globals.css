@@ -1,26 +1,131 @@
 @import "tailwindcss";
 
+/* ── Design Tokens ────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand colors */
+  --color-primary: #e5222d;
+  --color-primary-dark: #c33c0d;
+  --color-primary-darker: #ab340c;
+  --color-on-primary: #ffffff;
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-gray: #f6f6f6;
+  --color-surface-gray-2: #e3e6e5;
+
+  /* Text */
+  --color-text-primary: #161618;
+  --color-text-secondary: #333333;
+  --color-text-body: #8b8b8b;
+  --color-text-muted: #d1d4d3;
+
+  /* Borders */
+  --color-border: #e3e6e5;
+  --color-border-focus: #e5222d;
+
+  /* Status colors */
+  --color-status-pending: #e5222d;
+  --color-status-approved: #5cb85c;
+  --color-status-rejected: #d9534f;
+  --color-status-cancelled: #8b8b8b;
+  --color-status-revoked: #333333;
+  --color-status-draft: #d1d4d3;
+
+  /* Carry-over accent */
+  --color-carry-over: #14a5eb;
+
+  /* Typography */
+  --font-heading: var(--font-montserrat, "Montserrat", "Times New Roman", Times, serif);
+  --font-body: var(--font-roboto, "Roboto", sans-serif);
+
+  /* Spacing base unit: 8px */
+  --space-unit: 8px;
 }
 
+/* ── Tailwind theme extension ─────────────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-on-primary: var(--color-on-primary);
+  --color-surface: var(--color-surface);
+  --color-surface-gray: var(--color-surface-gray);
+  --color-surface-gray-2: var(--color-surface-gray-2);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-body: var(--color-text-body);
+  --color-text-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+  --color-border-focus: var(--color-border-focus);
+  --color-status-pending: var(--color-status-pending);
+  --color-status-approved: var(--color-status-approved);
+  --color-status-rejected: var(--color-status-rejected);
+  --color-status-cancelled: var(--color-status-cancelled);
+  --color-status-revoked: var(--color-status-revoked);
+  --color-status-draft: var(--color-status-draft);
+  --color-carry-over: var(--color-carry-over);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base styles ──────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100%;
+  background-color: var(--color-surface);
+  color: var(--color-text-body);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.43;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  color: var(--color-text-primary);
+}
+
+h1 {
+  font-size: 36px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+h3 {
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+}
+
+h5 {
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* No border-radius anywhere — sharp corners match the brand */
+* {
+  border-radius: 0 !important;
 }
