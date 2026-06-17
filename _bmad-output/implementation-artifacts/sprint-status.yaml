@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-11
-last_updated: 2026-06-17  # updated: 1-6, 1-7 → done
+last_updated: 2026-06-17  # updated: epic-2 → in-progress, 2-1 → ready-for-dev
 project: VacationRequest
 # updated: epic-1 → in-progress, 1-1 → ready-for-dev
 project_key: NOKEY
@@ -55,11 +55,11 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: User & Account Management
-  epic-2: backlog
-  2-1-create-and-remove-user-accounts: backlog
-  2-2-assign-supervisor-to-trainer: backlog
-  2-3-configure-fallback-approver: backlog
-  2-4-fallback-approver-permission-scope: backlog
+  epic-2: in-progress
+  2-1-create-and-remove-user-accounts: review
+  2-2-assign-supervisor-to-trainer: review
+  2-3-configure-fallback-approver: review
+  2-4-fallback-approver-permission-scope: review
   epic-2-retrospective: optional
 
   # Epic 3: Trainer Vacation Request Flows
