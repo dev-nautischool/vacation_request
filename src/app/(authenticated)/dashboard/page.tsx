@@ -1,8 +1,7 @@
-import { headers } from "next/headers"
-import { auth } from "@/lib/auth"
+import { getSession } from "@/lib/session"
 
 export default async function DashboardPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getSession()
 
   return (
     <div>
@@ -10,7 +9,7 @@ export default async function DashboardPage() {
         Dashboard
       </h1>
       <p className="font-[var(--font-body)] text-[14px] text-[var(--color-text-body)]">
-        Welcome, {session?.user.name}
+        Welcome, {session!.user.name}
       </p>
     </div>
   )
