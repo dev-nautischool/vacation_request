@@ -32,7 +32,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
 const mockPrismaUser = prisma.user as unknown as { findFirst: ReturnType<typeof vi.fn> }
-const mockSignIn = auth.api.signInEmail as ReturnType<typeof vi.fn>
+const mockSignIn = auth.api.signInEmail as unknown as ReturnType<typeof vi.fn>
 
 function makeFormData(fields: Record<string, string>): FormData {
   const fd = new FormData()
