@@ -33,6 +33,7 @@ import { auth } from "@/lib/auth"
 
 const mockPrismaUser = prisma.user as unknown as { findFirst: ReturnType<typeof vi.fn> }
 const mockSignIn = auth.api.signInEmail as unknown as ReturnType<typeof vi.fn>
+const mockSignOut = auth.api.signOut as unknown as ReturnType<typeof vi.fn>
 
 function makeFormData(fields: Record<string, string>): FormData {
   const fd = new FormData()
@@ -46,7 +47,7 @@ describe("login action", () => {
   })
 
   it("returns UNAUTHORIZED when user does not exist", async () => {
-    mockPrismaUser.findFirst.mockResolvedValue(null)
+    mockSignIn.mockRejectedValue(new Error("Invalid credentials"))
 
     const result = await login(null, makeFormData({ email: "x@x.com", password: "pw" }))
 
@@ -55,11 +56,13 @@ describe("login action", () => {
       error: "Invalid email or password",
       code: ERRORS.UNAUTHORIZED,
     })
-    expect(mockSignIn).not.toHaveBeenCalled()
+    expect(mockPrismaUser.findFirst).not.toHaveBeenCalled()
   })
 
   it("returns UNAUTHORIZED for deleted user (deletedAt set)", async () => {
-    mockPrismaUser.findFirst.mockResolvedValue(null)
+    mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: new Date() })
+    mockSignOut.mockResolvedValue(undefined)
 
     const result = await login(
       null,
@@ -70,7 +73,7 @@ describe("login action", () => {
     if (!result.success) {
       expect(result.code).toBe(ERRORS.UNAUTHORIZED)
     }
-    expect(mockSignIn).not.toHaveBeenCalled()
+    expect(mockSignOut).toHaveBeenCalled()
   })
 
   it("returns UNAUTHORIZED when better-auth throws", async () => {
@@ -90,8 +93,8 @@ describe("login action", () => {
   })
 
   it("returns success with /dashboard redirect on valid credentials", async () => {
-    mockPrismaUser.findFirst.mockResolvedValue({ id: "user-1" })
     mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null })
 
     const result = await login(
       null,
@@ -105,8 +108,8 @@ describe("login action", () => {
   })
 
   it("uses returnTo from form if valid internal path", async () => {
-    mockPrismaUser.findFirst.mockResolvedValue({ id: "user-1" })
     mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null })
 
     const result = await login(
       null,
@@ -120,8 +123,8 @@ describe("login action", () => {
   })
 
   it("rejects external returnTo (open-redirect prevention)", async () => {
-    mockPrismaUser.findFirst.mockResolvedValue({ id: "user-1" })
     mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null })
 
     const result = await login(
       null,
