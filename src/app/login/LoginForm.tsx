@@ -1,8 +1,7 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
 import { login } from "@/lib/actions/auth"
 import type { ActionResult } from "@/types"
 
@@ -14,13 +13,15 @@ type LoginResult = ActionResult<{ redirectTo: string }> | null
 
 export default function LoginForm({ returnTo }: Props) {
   const router = useRouter()
+  const redirected = useRef(false)
   const [state, formAction, pending] = useActionState<LoginResult, FormData>(
     login as (state: LoginResult, formData: FormData) => Promise<LoginResult>,
     null,
   )
 
   useEffect(() => {
-    if (state?.success) {
+    if (state?.success && !redirected.current) {
+      redirected.current = true
       router.push(state.data.redirectTo)
     }
   }, [state, router])

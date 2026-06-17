@@ -18,26 +18,13 @@ export async function login(
   const safeRedirect =
     returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/dashboard"
 
-  const user = await prisma.user.findFirst({
-    where: { email, deletedAt: null },
-    select: { id: true },
-  })
-
-  if (!user) {
-    return {
-      success: false,
-      error: "Invalid email or password",
-      code: ERRORS.UNAUTHORIZED,
-    }
-  }
+  const requestHeaders = await headers()
 
   try {
-    const requestHeaders = await headers()
     await auth.api.signInEmail({
       body: { email, password },
       headers: requestHeaders,
     })
-    return { success: true, data: { redirectTo: safeRedirect } }
   } catch {
     return {
       success: false,
@@ -45,6 +32,22 @@ export async function login(
       code: ERRORS.UNAUTHORIZED,
     }
   }
+
+  const user = await prisma.user.findFirst({
+    where: { email },
+    select: { deletedAt: true },
+  })
+
+  if (user?.deletedAt) {
+    await auth.api.signOut({ headers: requestHeaders }).catch(() => {})
+    return {
+      success: false,
+      error: "Invalid email or password",
+      code: ERRORS.UNAUTHORIZED,
+    }
+  }
+
+  return { success: true, data: { redirectTo: safeRedirect } }
 }
 
 export async function logout(): Promise<void> {
