@@ -31,3 +31,13 @@ jobs:
         run: npx prisma validate
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
+
+      - name: Run tests
+        run: npm test
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          BETTER_AUTH_SECRET: test-secret
+          SMTP_HOST: smtp.test
+          SMTP_USER: test
+          SMTP_PASS: test
+          APP_URL: http://localhost:3000

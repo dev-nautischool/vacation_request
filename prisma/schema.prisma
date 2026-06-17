@@ -6,3 +6,179 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Role {
+  TRAINER
+  SUPERVISOR
+}
+
+enum RequestStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  REVOKED
+}
+
+// ============================================================
+// BETTER AUTH REQUIRED MODELS
+// Better Auth v1.3.4 Prisma adapter accesses these via:
+// prisma.user, prisma.session, prisma.account, prisma.verification
+// Model names MUST be PascalCase; Prisma lowercases for access.
+// ============================================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false) @map("email_verified")
+  image         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Custom domain fields
+  role         Role      @default(TRAINER)
+  supervisorId String?   @map("supervisor_id")
+  deletedAt    DateTime? @map("deleted_at")
+
+  // Relations
+  supervisor       User?              @relation("SupervisorTrainers", fields: [supervisorId], references: [id])
+  trainers         User[]             @relation("SupervisorTrainers")
+  vacationRequests VacationRequest[]
+  entitlements     Entitlement[]
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+  fallbackFor      FallbackApprover[] @relation("FallbackApproverUser")
+  delegatedTo      FallbackApprover[] @relation("DelegatedSupervisor")
+  sessions         Session[]
+  accounts         Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime @map("expires_at")
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, providerId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("verifications")
+}
+
+// ============================================================
+// DOMAIN MODELS
+// ============================================================
+
+model VacationRequest {
+  id        String        @id @default(cuid())
+  trainerId String        @map("trainer_id")
+  status    RequestStatus @default(DRAFT)
+  startDate DateTime      @map("start_date")
+  endDate   DateTime      @map("end_date")
+  daysCount Int           @map("days_count")
+  reason    String?
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  trainer User @relation(fields: [trainerId], references: [id], onDelete: Restrict)
+
+  @@map("vacation_requests")
+}
+
+model Entitlement {
+  id        String   @id @default(cuid())
+  trainerId String   @map("trainer_id")
+  year      Int
+  days      Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  trainer User @relation(fields: [trainerId], references: [id], onDelete: Restrict)
+
+  @@unique([trainerId, year])
+  @@map("entitlements")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String   @map("actor_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  timestamp  DateTime @default(now())
+  metadata   Json
+
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("notifications")
+}
+
+model FallbackApprover {
+  id             String   @id @default(cuid())
+  supervisorId   String   @map("supervisor_id")
+  fallbackUserId String   @map("fallback_user_id")
+  expiresAt      DateTime @map("expires_at")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  supervisor   User @relation("DelegatedSupervisor", fields: [supervisorId], references: [id])
+  fallbackUser User @relation("FallbackApproverUser", fields: [fallbackUserId], references: [id])
+
+  @@map("fallback_approvers")
+}

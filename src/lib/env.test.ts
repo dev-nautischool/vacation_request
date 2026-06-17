@@ -6,7 +6,7 @@ const ALL_VARS = {
   SMTP_HOST: "smtp.example.com",
   SMTP_USER: "user@example.com",
   SMTP_PASS: "smtppassword",
-  NEXTAUTH_URL: "http://localhost:3000",
+  APP_URL: "http://localhost:3000",
 }
 
 describe("env validation", () => {
@@ -46,6 +46,6 @@ describe("env validation", () => {
     expect(env.SMTP_HOST).toBe(ALL_VARS.SMTP_HOST)
     expect(env.SMTP_USER).toBe(ALL_VARS.SMTP_USER)
     expect(env.SMTP_PASS).toBe(ALL_VARS.SMTP_PASS)
-    expect(env.NEXTAUTH_URL).toBe(ALL_VARS.NEXTAUTH_URL)
+    expect(env.APP_URL).toBe(ALL_VARS.APP_URL)
   })
 })

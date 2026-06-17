@@ -4,10 +4,10 @@ const REQUIRED = [
   "SMTP_HOST",
   "SMTP_USER",
   "SMTP_PASS",
-  "NEXTAUTH_URL",
+  "APP_URL",
 ] as const
 
-const missing = REQUIRED.filter((key) => !process.env[key])
+const missing = REQUIRED.filter((key) => !process.env[key]?.trim())
 if (missing.length > 0) {
   throw new Error(
     `Missing required environment variables: ${missing.join(", ")}\n` +
@@ -21,5 +21,5 @@ export const env = {
   SMTP_HOST: process.env.SMTP_HOST!,
   SMTP_USER: process.env.SMTP_USER!,
   SMTP_PASS: process.env.SMTP_PASS!,
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL!,
+  APP_URL: process.env.APP_URL!,
 }
