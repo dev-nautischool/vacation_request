@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, type ReactNode } from "react"
+import { useEffect, useId, type ReactNode } from "react"
 
 interface ModalProps {
   open: boolean
@@ -10,6 +10,8 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, children, title }: ModalProps) {
+  const titleId = useId()
+
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
@@ -26,7 +28,7 @@ export function Modal({ open, onClose, children, title }: ModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center"
       role="dialog"
       aria-modal="true"
-      aria-label={title}
+      aria-labelledby={title ? titleId : undefined}
     >
       {/* Backdrop */}
       <div
@@ -37,7 +39,7 @@ export function Modal({ open, onClose, children, title }: ModalProps) {
       {/* Panel */}
       <div className="relative z-10 bg-[var(--color-surface)] border border-[var(--color-border)] p-8 max-w-lg w-full mx-4">
         {title && (
-          <h3 className="mb-4">{title}</h3>
+          <h3 id={titleId} className="mb-4">{title}</h3>
         )}
         {children}
       </div>

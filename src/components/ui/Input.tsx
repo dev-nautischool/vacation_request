@@ -8,9 +8,11 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string
 }
 
-export function Input({ id, label, error, className = "", ...props }: InputProps) {
+export function Input({ id, label, error, className = "", onChange, ...props }: InputProps) {
   const [focused, setFocused] = useState(false)
-  const hasValue = Boolean(props.value ?? props.defaultValue)
+  const [hasInputValue, setHasInputValue] = useState(Boolean(props.defaultValue))
+  const isControlled = props.value !== undefined
+  const hasValue = isControlled ? Boolean(props.value) : hasInputValue
   const isFloated = focused || hasValue
 
   return (
@@ -31,6 +33,10 @@ export function Input({ id, label, error, className = "", ...props }: InputProps
           .join(" ")}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
+        onChange={(e) => {
+          if (!isControlled) setHasInputValue(e.target.value.length > 0)
+          onChange?.(e)
+        }}
         {...props}
       />
       <label

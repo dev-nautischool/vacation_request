@@ -24,8 +24,6 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null)
 
-let nextId = 0
-
 const TOAST_DURATION = 4000
 
 const typeStyles: Record<ToastType, string> = {
@@ -70,13 +68,14 @@ function ToastItem({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
+  const nextId = useRef(0)
 
   const dismiss = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
   const toast = useCallback((message: string, type: ToastType = "default") => {
-    const id = nextId++
+    const id = nextId.current++
     setToasts((prev) => [...prev, { id, message, type }])
   }, [])
 
