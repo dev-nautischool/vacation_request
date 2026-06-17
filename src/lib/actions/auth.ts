@@ -11,6 +11,7 @@ const ROLE_COOKIE = "user-role"
 const ROLE_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
   path: "/",
   // 30 days — matches Better Auth session expiry
   maxAge: 60 * 60 * 24 * 30,

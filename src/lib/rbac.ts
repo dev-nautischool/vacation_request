@@ -31,5 +31,7 @@ export function canActorPerformAction(
 ): boolean {
   if (actor.role === "TRAINER") return TRAINER_ACTIONS.includes(action)
   if (actor.role === "SUPERVISOR") return SUPERVISOR_ACTIONS.includes(action)
+  // Exhaustiveness guard: if a new Role is added, this line becomes a type error
+  actor.role satisfies never
   return false
 }

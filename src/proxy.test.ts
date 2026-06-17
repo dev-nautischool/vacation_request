@@ -114,9 +114,11 @@ describe("proxy", () => {
   })
 
   describe("authenticated — no role cookie", () => {
-    it("passes through (role check skipped when cookie absent)", () => {
+    it("redirects to /login with returnTo when role cookie absent", () => {
       const res = proxy(makeRequest("/approvals", { [SESSION]: SESSION_VAL }))
-      expect(res.status).toBe(200)
+      expect(res.status).toBe(307)
+      expect(res.headers.get("location")).toContain("/login")
+      expect(res.headers.get("location")).toContain("returnTo=%2Fapprovals")
     })
   })
 })

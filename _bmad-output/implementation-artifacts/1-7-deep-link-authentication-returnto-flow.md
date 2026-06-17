@@ -7,7 +7,7 @@ baseline_commit: 94760762c698be1944096f0c53f1d765000a9be8
 
 # Story 1.7: Deep-Link Authentication (returnTo Flow)
 
-Status: review
+Status: done
 
 ## Story
 

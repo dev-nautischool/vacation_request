@@ -32,6 +32,13 @@ export function proxy(request: NextRequest): NextResponse {
   // Optimistic RBAC check using the role cookie set at login
   const role = request.cookies.get(ROLE_COOKIE)?.value
 
+  // Role cookie absent despite valid session — force re-login to refresh it
+  if (!role) {
+    const loginUrl = new URL("/login", request.url)
+    loginUrl.searchParams.set("returnTo", pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
   if (role === "TRAINER" && TRAINER_FORBIDDEN.some((p) => pathname.startsWith(p))) {
     return new NextResponse(null, { status: 403 })
   }
