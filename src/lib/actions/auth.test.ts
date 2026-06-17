@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { ERRORS } from "@/lib/errors"
 import type { ActionResult } from "@/types"
 
+const { mockCookieSet, mockCookieDelete } = vi.hoisted(() => ({
+  mockCookieSet: vi.fn(),
+  mockCookieDelete: vi.fn(),
+}))
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
@@ -21,6 +26,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("next/headers", () => ({
   headers: vi.fn().mockResolvedValue(new Headers()),
+  cookies: vi.fn().mockResolvedValue({ set: mockCookieSet, delete: mockCookieDelete }),
 }))
 
 vi.mock("next/navigation", () => ({
@@ -44,6 +50,8 @@ function makeFormData(fields: Record<string, string>): FormData {
 describe("login action", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockCookieSet.mockReset()
+    mockCookieDelete.mockReset()
   })
 
   it("returns UNAUTHORIZED when user does not exist", async () => {
@@ -59,9 +67,22 @@ describe("login action", () => {
     expect(mockPrismaUser.findFirst).not.toHaveBeenCalled()
   })
 
+  it("returns UNAUTHORIZED when user not found in DB after signIn", async () => {
+    mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
+    mockPrismaUser.findFirst.mockResolvedValue(null)
+    mockSignOut.mockResolvedValue(undefined)
+
+    const result = await login(null, makeFormData({ email: "ghost@x.com", password: "pw" }))
+
+    expect(result.success).toBe(false)
+    if (!result.success) expect(result.code).toBe(ERRORS.UNAUTHORIZED)
+    expect(mockSignOut).toHaveBeenCalled()
+    expect(mockCookieSet).not.toHaveBeenCalled()
+  })
+
   it("returns UNAUTHORIZED for deleted user (deletedAt set)", async () => {
     mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
-    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: new Date() })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: new Date(), role: "TRAINER" })
     mockSignOut.mockResolvedValue(undefined)
 
     const result = await login(
@@ -94,7 +115,7 @@ describe("login action", () => {
 
   it("returns success with /dashboard redirect on valid credentials", async () => {
     mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
-    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null, role: "TRAINER" })
 
     const result = await login(
       null,
@@ -109,7 +130,7 @@ describe("login action", () => {
 
   it("uses returnTo from form if valid internal path", async () => {
     mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
-    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null, role: "TRAINER" })
 
     const result = await login(
       null,
@@ -124,7 +145,7 @@ describe("login action", () => {
 
   it("rejects external returnTo (open-redirect prevention)", async () => {
     mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
-    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null, role: "TRAINER" })
 
     const result = await login(
       null,
@@ -135,5 +156,49 @@ describe("login action", () => {
     if (result.success) {
       expect(result.data.redirectTo).toBe("/dashboard")
     }
+  })
+
+  it("sets user-role cookie with TRAINER role on successful login", async () => {
+    mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null, role: "TRAINER" })
+
+    await login(null, makeFormData({ email: "a@x.com", password: "p" }))
+
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "user-role",
+      "TRAINER",
+      expect.objectContaining({ httpOnly: true }),
+    )
+  })
+
+  it("sets user-role cookie with SUPERVISOR role on successful login", async () => {
+    mockSignIn.mockResolvedValue({ user: { id: "s1" } })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: null, role: "SUPERVISOR" })
+
+    await login(null, makeFormData({ email: "sup@x.com", password: "p" }))
+
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "user-role",
+      "SUPERVISOR",
+      expect.objectContaining({ httpOnly: true }),
+    )
+  })
+
+  it("does not set role cookie when login fails (signInEmail throws)", async () => {
+    mockSignIn.mockRejectedValue(new Error("bad creds"))
+
+    await login(null, makeFormData({ email: "x@x.com", password: "wrong" }))
+
+    expect(mockCookieSet).not.toHaveBeenCalled()
+  })
+
+  it("does not set role cookie when user is deleted", async () => {
+    mockSignIn.mockResolvedValue({ user: { id: "user-1" } })
+    mockPrismaUser.findFirst.mockResolvedValue({ deletedAt: new Date(), role: "TRAINER" })
+    mockSignOut.mockResolvedValue(undefined)
+
+    await login(null, makeFormData({ email: "deleted@x.com", password: "p" }))
+
+    expect(mockCookieSet).not.toHaveBeenCalled()
   })
 })
