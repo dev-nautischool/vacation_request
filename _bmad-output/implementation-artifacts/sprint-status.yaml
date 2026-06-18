@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-11
-last_updated: 2026-06-18  # updated: epic-3 → done, all 3-x stories → done
+last_updated: 2026-06-18  # updated: epic-4 → done, all 4-x stories → done
 project: VacationRequest
 # updated: epic-1 → in-progress, 1-1 → ready-for-dev
 project_key: NOKEY
@@ -73,12 +73,12 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Supervisor Approval & Entitlement Flows
-  epic-4: backlog
-  4-1-approve-and-reject-pending-requests: backlog
-  4-2-revoke-an-approved-request: backlog
-  4-3-set-and-manage-trainer-entitlement: backlog
-  4-4-supervisor-dashboard-and-trainer-overview: backlog
-  4-5-full-request-history-for-supervisors: backlog
+  epic-4: done
+  4-1-approve-and-reject-pending-requests: done
+  4-2-revoke-an-approved-request: done
+  4-3-set-and-manage-trainer-entitlement: done
+  4-4-supervisor-dashboard-and-trainer-overview: done
+  4-5-full-request-history-for-supervisors: done
   epic-4-retrospective: optional
 
   # Epic 5: Notifications, Scheduled Jobs & Audit Log Viewer
