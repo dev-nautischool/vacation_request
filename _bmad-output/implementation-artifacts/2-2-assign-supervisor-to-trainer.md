@@ -7,7 +7,7 @@ baseline_commit: b3092b1
 
 # Story 2.2: Assign Supervisor to Trainer
 
-Status: review
+Status: done
 
 ## Story
 

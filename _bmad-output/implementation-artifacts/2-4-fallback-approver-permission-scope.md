@@ -7,7 +7,7 @@ baseline_commit: b3092b1
 
 # Story 2.4: Fallback Approver Permission Scope
 
-Status: review
+Status: done
 
 ## Story
 

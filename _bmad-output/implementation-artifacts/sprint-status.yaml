@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-11
-last_updated: 2026-06-17  # updated: epic-2 → in-progress, 2-1 → ready-for-dev
+last_updated: 2026-06-18  # updated: epic-3 → done, all 3-x stories → done
 project: VacationRequest
 # updated: epic-1 → in-progress, 1-1 → ready-for-dev
 project_key: NOKEY
@@ -55,21 +55,21 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: User & Account Management
-  epic-2: in-progress
-  2-1-create-and-remove-user-accounts: review
-  2-2-assign-supervisor-to-trainer: review
-  2-3-configure-fallback-approver: review
-  2-4-fallback-approver-permission-scope: review
+  epic-2: done
+  2-1-create-and-remove-user-accounts: done
+  2-2-assign-supervisor-to-trainer: done
+  2-3-configure-fallback-approver: done
+  2-4-fallback-approver-permission-scope: done
   epic-2-retrospective: optional
 
   # Epic 3: Trainer Vacation Request Flows
-  epic-3: backlog
-  3-1-request-state-machine-and-core-domain-services: backlog
-  3-2-submit-a-vacation-request: backlog
-  3-3-save-and-manage-a-draft-request: backlog
-  3-4-cancel-a-pending-or-approved-request: backlog
-  3-5-vacation-balance-display-and-trainer-dashboard: backlog
-  3-6-my-requests-history-view: backlog
+  epic-3: done
+  3-1-request-state-machine-and-core-domain-services: done
+  3-2-submit-a-vacation-request: done
+  3-3-save-and-manage-a-draft-request: done
+  3-4-cancel-a-pending-or-approved-request: done
+  3-5-vacation-balance-display-and-trainer-dashboard: done
+  3-6-my-requests-history-view: done
   epic-3-retrospective: optional
 
   # Epic 4: Supervisor Approval & Entitlement Flows

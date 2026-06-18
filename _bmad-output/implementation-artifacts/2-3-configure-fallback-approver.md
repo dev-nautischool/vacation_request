@@ -7,7 +7,7 @@ baseline_commit: b3092b1
 
 # Story 2.3: Configure Fallback Approver
 
-Status: review
+Status: done
 
 ## Story
 
