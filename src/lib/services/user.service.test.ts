@@ -10,6 +10,7 @@ vi.mock("@/lib/prisma", () => ({
     },
     account: {
       create: vi.fn(),
+      updateMany: vi.fn(),
     },
     fallbackApprover: {
       updateMany: vi.fn(),
@@ -33,6 +34,7 @@ const mockUser = prisma.user as unknown as {
 }
 const mockAccount = prisma.account as unknown as {
   create: ReturnType<typeof vi.fn>
+  updateMany: ReturnType<typeof vi.fn>
 }
 const mockFallbackApprover = prisma.fallbackApprover as unknown as {
   updateMany: ReturnType<typeof vi.fn>
@@ -104,6 +106,38 @@ describe("createUser", () => {
       expect(result.fields?.email).toBeTruthy()
     }
     expect(mockUser.create).not.toHaveBeenCalled()
+  })
+
+  it("resurrects a soft-deleted user with the same email instead of inserting", async () => {
+    const softDeletedUser = { ...fakeUser, deletedAt: new Date("2026-01-01") }
+    // first findFirst (active check) → null; second findFirst (soft-deleted check) → softDeletedUser
+    mockUser.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(softDeletedUser)
+    const resurrected = { ...fakeUser, role: "SUPERVISOR" as const, deletedAt: null }
+    mockUser.update.mockResolvedValue(resurrected)
+    mockAccount.updateMany.mockResolvedValue({ count: 1 })
+
+    const result = await createUser("actor-1", {
+      name: "Alice",
+      email: "alice@test.com",
+      role: "SUPERVISOR",
+      password: "NewPassword1!",
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.deletedAt).toBeNull()
+    expect(mockUser.create).not.toHaveBeenCalled()
+    expect(mockUser.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: softDeletedUser.id },
+        data: expect.objectContaining({ role: "SUPERVISOR", deletedAt: null }),
+      }),
+    )
+    expect(mockAccount.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: softDeletedUser.id, providerId: "credential" },
+        data: { password: "hashed-password" },
+      }),
+    )
   })
 })
 

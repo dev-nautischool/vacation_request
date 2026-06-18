@@ -24,23 +24,40 @@ export async function createUser(
 
   const hashedPassword = await hashPassword(data.password)
 
-  const user = await prisma.user.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      emailVerified: true,
-    },
+  // Resurrect a previously soft-deleted record with the same email rather than
+  // inserting a new row, which would violate the unique constraint on email.
+  const softDeleted = await prisma.user.findFirst({
+    where: { email: data.email },
   })
 
-  await prisma.account.create({
-    data: {
-      accountId: data.email,
-      providerId: "credential",
-      userId: user.id,
-      password: hashedPassword,
-    },
-  })
+  let user
+  if (softDeleted) {
+    user = await prisma.user.update({
+      where: { id: softDeleted.id },
+      data: { name: data.name, role: data.role, deletedAt: null, supervisorId: null },
+    })
+    await prisma.account.updateMany({
+      where: { userId: softDeleted.id, providerId: "credential" },
+      data: { password: hashedPassword },
+    })
+  } else {
+    user = await prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        emailVerified: true,
+      },
+    })
+    await prisma.account.create({
+      data: {
+        accountId: data.email,
+        providerId: "credential",
+        userId: user.id,
+        password: hashedPassword,
+      },
+    })
+  }
 
   return { success: true, data: user }
 }
